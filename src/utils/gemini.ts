@@ -1,5 +1,6 @@
 
 import { toast } from "@/components/ui/use-toast";
+import { generateAstrologyResponse } from './astrology';
 
 // Gemini API configuration
 const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
@@ -8,21 +9,8 @@ const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-
  * Checks if a question is related to astrology
  */
 export function isAstrologyQuestion(question: string): boolean {
-  const astrologyKeywords = [
-    "zodiac", "horoscope", "star sign", "astrology", "birth chart", "planet", "mercury", "venus", "mars",
-    "jupiter", "saturn", "uranus", "neptune", "pluto", "moon", "sun", "rising", "ascendant", "house",
-    "constellation", "alignment", "retrograde", "transit", "natal chart", "compatibility", "fortune",
-    "future", "destiny", "fate", "sign", "aries", "taurus", "gemini", "cancer", "leo", "virgo", "libra",
-    "scorpio", "sagittarius", "capricorn", "aquarius", "pisces", "celestial", "cosmic", "stars"
-  ];
-
-  const questionLower = question.toLowerCase();
-  return astrologyKeywords.some(keyword => questionLower.includes(keyword)) || 
-         questionLower.includes("will i") || 
-         questionLower.includes("my future") ||
-         questionLower.includes("my destiny") ||
-         questionLower.includes("my path") ||
-         questionLower.includes("what should i");
+  // All questions are now considered valid for our cosmic guide
+  return true;
 }
 
 /**
@@ -50,11 +38,12 @@ export async function getGeminiAstrologyResponse(
           {
             parts: [
               {
-                text: `You are a mystical astrologer with deep knowledge of the cosmos. 
-                Respond to this question in a mystical, cosmic way with astrological references. 
-                Mention stars, planets, zodiac signs, or cosmic energies in your response.
+                text: `You are a mystical astrologer with deep knowledge of the cosmos.
+                Answer this question in a mystical, cosmic way with astrological references.
+                Mention stars, planets, zodiac signs, or cosmic energies where relevant.
                 Be somewhat vague but insightful, like a real astrologer.
                 Keep your response between 2-4 sentences, and use flowery, mystical language.
+                Be helpful and respond to any personal or astrological questions.
                 Question: "${question}"`,
               },
             ],
@@ -87,16 +76,15 @@ export async function getGeminiAstrologyResponse(
       variant: "destructive"
     });
     
-    // Use the local astrology response generator instead of requiring it
+    // Use the local astrology response generator as fallback
     return generateFallbackResponse(question);
   }
 }
 
 // Fallback to local response generation if API fails
 function generateFallbackResponse(question: string): string {
-  // Import the function directly instead of using require
-  const { generateAstrologyResponse } = require('@/utils/astrology');
   try {
+    // Import the function directly without require
     return generateAstrologyResponse(question);
   } catch (e) {
     // If there's an error with the import, use a simple fallback

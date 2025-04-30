@@ -5,7 +5,7 @@ import ChatInput from '../components/ChatInput';
 import StarField from '../components/StarField';
 import AstrologyHeader from '../components/AstrologyHeader';
 import ApiKeyForm from '../components/ApiKeyForm';
-import { getGeminiAstrologyResponse, isAstrologyQuestion } from '../utils/gemini';
+import { getGeminiAstrologyResponse } from '../utils/gemini';
 import { generateAstrologyResponse } from '../utils/astrology';
 import { useToast } from '@/components/ui/use-toast';
 
@@ -19,7 +19,7 @@ const Index: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      text: "Welcome to yourastrology. Ask me anything about your destiny, relationships, career, or anything that's on your mind. The stars are ready to guide you.",
+      text: "Welcome to yourastrology. I am your cosmic guide. Ask me about your destiny, relationships, career, or any personal questions. The stars are ready to guide you.",
       isUser: false
     }
   ]);
@@ -58,16 +58,11 @@ const Index: React.FC = () => {
     try {
       let response: string;
       
-      // Check if it's an astrology question
-      if (isAstrologyQuestion(messageText)) {
-        // Use Gemini API if key is provided, otherwise use local generation
-        if (apiKey) {
-          response = await getGeminiAstrologyResponse(messageText, apiKey);
-        } else {
-          response = generateAstrologyResponse(messageText);
-        }
+      // Use Gemini API if key is provided, otherwise use local generation
+      if (apiKey) {
+        response = await getGeminiAstrologyResponse(messageText, apiKey);
       } else {
-        response = "I'm your cosmic guide specializing in astrology. Please ask me about your zodiac sign, horoscope, planetary alignments, or other astrological matters for the best guidance.";
+        response = generateAstrologyResponse(messageText);
       }
       
       // Add AI response
