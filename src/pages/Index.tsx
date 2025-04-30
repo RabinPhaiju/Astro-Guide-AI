@@ -8,6 +8,9 @@ import ApiKeyForm from '../components/ApiKeyForm';
 import { getGeminiAstrologyResponse } from '../utils/gemini';
 import { generateAstrologyResponse } from '../utils/astrology';
 import { useToast } from '@/components/ui/use-toast';
+import OnboardingForm from '../components/OnboardingForm';
+import UserProfile from '../components/UserProfile';
+import ChatHistory from '../components/ChatHistory';
 
 interface Message {
   id: string;
@@ -19,13 +22,18 @@ const Index: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      text: "Welcome to yourastrology. I am your cosmic guide. Ask me about your destiny, relationships, career, or any personal questions. The stars are ready to guide you.",
+      text: "Welcome to your astrologer. I am your cosmic guide. Before we begin, please share your date of birth and location.",
       isUser: false
     }
   ]);
   
   const [isThinking, setIsThinking] = useState(false);
   const [apiKey, setApiKey] = useState<string>('');
+  const [isOnboardingComplete, setIsOnboardingComplete] = useState(false);
+  const [dateOfBirth, setDateOfBirth] = useState('');
+  const [location, setLocation] = useState('');
+  const [isChatHistoryOpen, setIsChatHistoryOpen] = useState(false);
+  
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -43,8 +51,33 @@ const Index: React.FC = () => {
     setApiKey(key);
   };
 
+  const handleOnboardingComplete = (dob: string, loc: string) => {
+    setDateOfBirth(dob);
+    setLocation(loc);
+    setIsOnboardingComplete(true);
+    
+    // Add a confirmation message
+    const newMessage: Message = {
+      id: `ai-${Date.now()}`,
+      text: `Thank you. I now have your birth details (${dob}, ${loc}). How may I assist you with your cosmic inquiries today?`,
+      isUser: false
+    };
+    
+    setMessages(prev => [...prev, newMessage]);
+  };
+
   // Handle new user message
   const handleSendMessage = async (messageText: string) => {
+    // Don't process messages if onboarding isn't complete
+    if (!isOnboardingComplete) {
+      toast({
+        title: "Please complete onboarding",
+        description: "We need your date of birth and location before consulting the stars.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     // Add user message
     const newUserMessage: Message = {
       id: `user-${Date.now()}`,
@@ -91,26 +124,39 @@ const Index: React.FC = () => {
     <div className="min-h-screen flex flex-col bg-cosmic-bg overflow-hidden relative">
       <StarField />
       <ApiKeyForm onApiKeySave={handleApiKeySave} />
+      <ChatHistory 
+        isOpen={isChatHistoryOpen} 
+        onClose={() => setIsChatHistoryOpen(false)} 
+        messages={messages}
+      />
       
       <div className="relative z-10 flex flex-col h-screen">
-        <AstrologyHeader />
+        <AstrologyHeader openChatHistory={() => setIsChatHistoryOpen(true)} />
+        
+        {isOnboardingComplete && <UserProfile dateOfBirth={dateOfBirth} location={location} />}
         
         <main className="flex-1 overflow-y-auto px-4 pb-6 pt-2">
           <div className="max-w-3xl mx-auto space-y-4">
-            {messages.map((message) => (
-              <ChatMessage 
-                key={message.id} 
-                message={message.text} 
-                isUser={message.isUser} 
-              />
-            ))}
-            
-            {isThinking && (
-              <div className="flex space-x-2 p-3 chat-bubble-assistant self-start inline-flex max-w-[80%]">
-                <div className="bg-cosmic-accent/30 h-2 w-2 rounded-full animate-pulse delay-100"></div>
-                <div className="bg-cosmic-accent/30 h-2 w-2 rounded-full animate-pulse delay-200"></div>
-                <div className="bg-cosmic-accent/30 h-2 w-2 rounded-full animate-pulse delay-300"></div>
-              </div>
+            {!isOnboardingComplete ? (
+              <OnboardingForm onComplete={handleOnboardingComplete} />
+            ) : (
+              <>
+                {messages.map((message) => (
+                  <ChatMessage 
+                    key={message.id} 
+                    message={message.text} 
+                    isUser={message.isUser} 
+                  />
+                ))}
+                
+                {isThinking && (
+                  <div className="flex space-x-2 p-3 chat-bubble-assistant self-start inline-flex max-w-[80%]">
+                    <div className="bg-cosmic-accent/30 h-2 w-2 rounded-full animate-pulse delay-100"></div>
+                    <div className="bg-cosmic-accent/30 h-2 w-2 rounded-full animate-pulse delay-200"></div>
+                    <div className="bg-cosmic-accent/30 h-2 w-2 rounded-full animate-pulse delay-300"></div>
+                  </div>
+                )}
+              </>
             )}
             
             <div ref={messagesEndRef} />
@@ -118,7 +164,7 @@ const Index: React.FC = () => {
         </main>
         
         <footer className="sticky bottom-0 w-full px-4 py-4 bg-gradient-to-t from-cosmic-bg to-transparent">
-          <ChatInput onSubmit={handleSendMessage} />
+          <ChatInput onSubmit={handleSendMessage} disabled={!isOnboardingComplete} />
         </footer>
       </div>
     </div>

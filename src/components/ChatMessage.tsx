@@ -22,7 +22,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, isUser }) => {
     setDisplayedText('');
     
     let index = 0;
-    const typingSpeed = 30; // milliseconds per character
+    const typingSpeed = 20; // Updated: 1.5x faster (was 30ms per character)
     
     const typingInterval = setInterval(() => {
       if (index < message.length) {
