@@ -13,6 +13,11 @@ const AstrologyHeader: React.FC = () => {
       <p className="text-cosmic-text/80 text-sm md:text-base max-w-md text-center">
         Ask the stars about your fate, relationships, career, or any guidance you seek
       </p>
+      <div className="mt-1 text-cosmic-accent/60 text-xs flex items-center gap-1">
+        <span>✨</span>
+        <span>Powered by cosmic AI</span>
+        <span>✨</span>
+      </div>
     </header>
   );
 };

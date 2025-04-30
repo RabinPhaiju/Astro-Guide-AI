@@ -23,7 +23,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, isUser }) => {
             <span className="text-cosmic-accent text-sm">Cosmic Guide</span>
           </div>
         )}
-        <p className="text-sm md:text-base">{message}</p>
+        <p className="text-sm md:text-base whitespace-pre-wrap">{message}</p>
       </div>
     </div>
   );

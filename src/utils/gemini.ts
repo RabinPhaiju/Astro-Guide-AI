@@ -1,0 +1,100 @@
+
+import { toast } from "@/components/ui/use-toast";
+
+// Gemini API configuration
+const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent";
+
+/**
+ * Checks if a question is related to astrology
+ */
+export function isAstrologyQuestion(question: string): boolean {
+  const astrologyKeywords = [
+    "zodiac", "horoscope", "star sign", "astrology", "birth chart", "planet", "mercury", "venus", "mars",
+    "jupiter", "saturn", "uranus", "neptune", "pluto", "moon", "sun", "rising", "ascendant", "house",
+    "constellation", "alignment", "retrograde", "transit", "natal chart", "compatibility", "fortune",
+    "future", "destiny", "fate", "sign", "aries", "taurus", "gemini", "cancer", "leo", "virgo", "libra",
+    "scorpio", "sagittarius", "capricorn", "aquarius", "pisces", "celestial", "cosmic", "stars"
+  ];
+
+  const questionLower = question.toLowerCase();
+  return astrologyKeywords.some(keyword => questionLower.includes(keyword)) || 
+         questionLower.includes("will i") || 
+         questionLower.includes("my future") ||
+         questionLower.includes("my destiny") ||
+         questionLower.includes("my path") ||
+         questionLower.includes("what should i");
+}
+
+/**
+ * Generates a response using Gemini API for astrological questions
+ */
+export async function getGeminiAstrologyResponse(
+  question: string, 
+  apiKey: string
+): Promise<string> {
+  try {
+    // Check if API key is provided
+    if (!apiKey) {
+      return "I need a valid Gemini API key to consult the stars. Please provide one in the settings.";
+    }
+    
+    const fullUrl = `${API_URL}?key=${apiKey}`;
+    
+    const response = await fetch(fullUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        contents: [
+          {
+            parts: [
+              {
+                text: `You are a mystical astrologer with deep knowledge of the cosmos. 
+                Respond to this question in a mystical, cosmic way with astrological references. 
+                Mention stars, planets, zodiac signs, or cosmic energies in your response.
+                Be somewhat vague but insightful, like a real astrologer.
+                Keep your response between 2-4 sentences, and use flowery, mystical language.
+                Question: "${question}"`,
+              },
+            ],
+          },
+        ],
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("Gemini API error:", errorData);
+      throw new Error(`API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    
+    // Extract the response text from the Gemini API response
+    const responseText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    
+    if (!responseText) {
+      throw new Error("No response from Gemini");
+    }
+    
+    return responseText;
+  } catch (error) {
+    console.error("Error getting astrology response:", error);
+    toast({
+      title: "Cosmic Interference",
+      description: "The stars are temporarily obscured. Please try again later.",
+      variant: "destructive"
+    });
+    
+    // Fallback to local generation if API fails
+    return generateFallbackResponse(question);
+  }
+}
+
+// Fallback to local response generation if API fails
+function generateFallbackResponse(question: string): string {
+  // Import this function from the existing astrology.ts
+  const { generateAstrologyResponse } = require('./astrology');
+  return generateAstrologyResponse(question);
+}

@@ -4,6 +4,8 @@ import ChatMessage from '../components/ChatMessage';
 import ChatInput from '../components/ChatInput';
 import StarField from '../components/StarField';
 import AstrologyHeader from '../components/AstrologyHeader';
+import ApiKeyForm from '../components/ApiKeyForm';
+import { getGeminiAstrologyResponse, isAstrologyQuestion } from '../utils/gemini';
 import { generateAstrologyResponse } from '../utils/astrology';
 import { useToast } from '@/components/ui/use-toast';
 
@@ -23,6 +25,7 @@ const Index: React.FC = () => {
   ]);
   
   const [isThinking, setIsThinking] = useState(false);
+  const [apiKey, setApiKey] = useState<string>('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -35,8 +38,13 @@ const Index: React.FC = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  // Handle API key update
+  const handleApiKeySave = (key: string) => {
+    setApiKey(key);
+  };
+
   // Handle new user message
-  const handleSendMessage = (messageText: string) => {
+  const handleSendMessage = async (messageText: string) => {
     // Add user message
     const newUserMessage: Message = {
       id: `user-${Date.now()}`,
@@ -47,9 +55,20 @@ const Index: React.FC = () => {
     setMessages(prev => [...prev, newUserMessage]);
     setIsThinking(true);
     
-    // Simulate AI thinking time
-    setTimeout(() => {
-      const response = generateAstrologyResponse(messageText);
+    try {
+      let response: string;
+      
+      // Check if it's an astrology question
+      if (isAstrologyQuestion(messageText)) {
+        // Use Gemini API if key is provided, otherwise use local generation
+        if (apiKey) {
+          response = await getGeminiAstrologyResponse(messageText, apiKey);
+        } else {
+          response = generateAstrologyResponse(messageText);
+        }
+      } else {
+        response = "I'm your cosmic guide specializing in astrology. Please ask me about your zodiac sign, horoscope, planetary alignments, or other astrological matters for the best guidance.";
+      }
       
       // Add AI response
       const newAiMessage: Message = {
@@ -59,13 +78,24 @@ const Index: React.FC = () => {
       };
       
       setMessages(prev => [...prev, newAiMessage]);
+    } catch (error) {
+      console.error("Error generating response:", error);
+      // Fallback response
+      const fallbackMessage: Message = {
+        id: `ai-${Date.now()}`,
+        text: "The cosmic energies are turbulent at the moment. Please try asking again later when the stars realign.",
+        isUser: false
+      };
+      setMessages(prev => [...prev, fallbackMessage]);
+    } finally {
       setIsThinking(false);
-    }, 1500);
+    }
   };
 
   return (
     <div className="min-h-screen flex flex-col bg-cosmic-bg overflow-hidden relative">
       <StarField />
+      <ApiKeyForm onApiKeySave={handleApiKeySave} />
       
       <div className="relative z-10 flex flex-col h-screen">
         <AstrologyHeader />
