@@ -2,7 +2,7 @@
 import { toast } from "@/components/ui/use-toast";
 
 // Gemini API configuration
-const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent";
+const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
 
 /**
  * Checks if a question is related to astrology
@@ -87,14 +87,20 @@ export async function getGeminiAstrologyResponse(
       variant: "destructive"
     });
     
-    // Fallback to local generation if API fails
+    // Use the local astrology response generator instead of requiring it
     return generateFallbackResponse(question);
   }
 }
 
 // Fallback to local response generation if API fails
 function generateFallbackResponse(question: string): string {
-  // Import this function from the existing astrology.ts
-  const { generateAstrologyResponse } = require('./astrology');
-  return generateAstrologyResponse(question);
+  // Import the function directly instead of using require
+  const { generateAstrologyResponse } = require('@/utils/astrology');
+  try {
+    return generateAstrologyResponse(question);
+  } catch (e) {
+    // If there's an error with the import, use a simple fallback
+    console.error("Error using fallback generator:", e);
+    return "The cosmic energies are unsettled at the moment. The stars will align soon to provide you with guidance.";
+  }
 }
