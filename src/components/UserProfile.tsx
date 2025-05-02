@@ -14,7 +14,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ dateOfBirth, location, birthT
   const navigate = useNavigate();
 
   return (
-    <div className="absolute top-16 right-4 bg-cosmic-bg/80 backdrop-blur-sm p-3 rounded-lg border border-cosmic-accent/20 text-xs md:text-sm">
+    <div className="absolute top-16 right-4 z-10 bg-cosmic-bg/80 backdrop-blur-sm p-3 rounded-lg border border-cosmic-accent/20 text-xs md:text-sm">
       <div className="flex items-center justify-between mb-2">
         <span className="text-cosmic-accent text-sm">Your Profile</span>
         <button 

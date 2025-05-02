@@ -23,7 +23,7 @@ interface Message {
 
 const Index: React.FC = () => {
   // Initial welcome message
-  const welcomeMessage = "Welcome to AstroGuide AI. I'm here to provide cosmic insights about your relationships, career path, personal growth, and life's journey. What would you like to explore today? Feel free to ask about love, career opportunities, spiritual guidance, or any other aspect of your life that needs clarity.";
+  const welcomeMessage = "Welcome to **AstroGuide AI**. I'm here to provide cosmic insights about your **relationships, career path, personal growth, and life's journey**. What would you like to explore today? Feel free to ask about **love, career opportunities, spiritual guidance, or any other aspect of your life** that needs clarity.";
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [isThinking, setIsThinking] = useState(false);

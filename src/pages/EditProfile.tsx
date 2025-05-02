@@ -39,7 +39,6 @@ const EditProfile: React.FC = () => {
           onClick={() => navigate('/')}
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Chat
         </Button>
         
         <h1 className="text-2xl text-center font-bold gradient-text mb-6">Edit Your Cosmic Profile</h1>

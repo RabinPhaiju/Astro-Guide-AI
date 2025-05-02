@@ -55,7 +55,7 @@ export async function getGeminiAstrologyResponse(
           {
             parts: [
               {
-                text: `You are a trained expert in vedic astrology. Provide details and prediction about the question below with details.
+                text: `You are a trained expert in vedic astrology. Provide prediction about the question below with minor details as summary.
                 ${userInfoString}
                 Question: "${question}"`,
               },
