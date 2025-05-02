@@ -18,7 +18,13 @@ export function isAstrologyQuestion(question: string): boolean {
  */
 export async function getGeminiAstrologyResponse(
   question: string, 
-  apiKey: string
+  apiKey: string,
+  userInfo?: {
+    dateOfBirth: string;
+    location: string;
+    birthTime: string;
+    gender: string;
+  }
 ): Promise<string> {
   try {
     // Check if API key is provided
@@ -27,6 +33,17 @@ export async function getGeminiAstrologyResponse(
     }
     
     const fullUrl = `${API_URL}?key=${apiKey}`;
+    
+    let userInfoString = '';
+    if (userInfo) {
+      userInfoString = `
+      The person asking has provided the following information:
+      Date of Birth: ${userInfo.dateOfBirth}
+      Birth Time: ${userInfo.birthTime}
+      Birth Location: ${userInfo.location}
+      Gender: ${userInfo.gender}
+      `;
+    }
     
     const response = await fetch(fullUrl, {
       method: "POST",
@@ -39,6 +56,7 @@ export async function getGeminiAstrologyResponse(
             parts: [
               {
                 text: `You are a mystical astrologer with deep knowledge of the cosmos.
+                ${userInfoString}
                 Answer this question in a mystical, cosmic way with astrological references.
                 Mention stars, planets, zodiac signs, or cosmic energies where relevant.
                 Be somewhat vague but insightful, like a real astrologer.
@@ -84,7 +102,6 @@ export async function getGeminiAstrologyResponse(
 // Fallback to local response generation if API fails
 function generateFallbackResponse(question: string): string {
   try {
-    // Import the function directly without require
     return generateAstrologyResponse(question);
   } catch (e) {
     // If there's an error with the import, use a simple fallback

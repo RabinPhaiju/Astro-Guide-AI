@@ -2,25 +2,52 @@
 import React, { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
+import { Form, FormField, FormItem, FormLabel, FormControl } from '@/components/ui/form';
+import { useForm } from 'react-hook-form';
 
 interface OnboardingFormProps {
-  onComplete: (dateOfBirth: string, location: string) => void;
+  onComplete: (dateOfBirth: string, location: string, birthTime: string, gender: string) => void;
+}
+
+interface FormValues {
+  dateOfBirth: string;
+  location: string;
+  birthTime: string;
+  gender: string;
 }
 
 const OnboardingForm: React.FC<OnboardingFormProps> = ({ onComplete }) => {
-  const [dateOfBirth, setDateOfBirth] = useState('');
-  const [location, setLocation] = useState('');
   const [error, setError] = useState('');
+  
+  const form = useForm<FormValues>({
+    defaultValues: {
+      dateOfBirth: '',
+      location: '',
+      birthTime: '',
+      gender: 'neutral'
+    }
+  });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!dateOfBirth || !location) {
+  const handleSubmit = (values: FormValues) => {
+    if (!values.dateOfBirth || !values.location) {
       setError('Please provide both your date of birth and location.');
       return;
     }
     
-    onComplete(dateOfBirth, location);
+    // Save to localStorage
+    localStorage.setItem('userDateOfBirth', values.dateOfBirth);
+    localStorage.setItem('userLocation', values.location);
+    localStorage.setItem('userBirthTime', values.birthTime || 'Not provided');
+    localStorage.setItem('userGender', values.gender);
+    
+    onComplete(
+      values.dateOfBirth, 
+      values.location, 
+      values.birthTime || 'Not provided',
+      values.gender
+    );
   };
 
   return (
@@ -30,43 +57,100 @@ const OnboardingForm: React.FC<OnboardingFormProps> = ({ onComplete }) => {
         To provide you with accurate cosmic insights, please share your birth details.
       </p>
       
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label htmlFor="dob" className="block text-cosmic-text mb-2 text-sm">
-            Date of Birth
-          </label>
-          <Input
-            id="dob"
-            type="date"
-            value={dateOfBirth}
-            onChange={(e) => setDateOfBirth(e.target.value)}
-            className="bg-cosmic-bg border-cosmic-accent/30 text-cosmic-text"
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+          <FormField
+            control={form.control}
+            name="dateOfBirth"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="block text-cosmic-text mb-2 text-sm">Date of Birth</FormLabel>
+                <FormControl>
+                  <Input
+                    type="date"
+                    {...field}
+                    className="bg-cosmic-bg border-cosmic-accent/30 text-cosmic-text"
+                  />
+                </FormControl>
+              </FormItem>
+            )}
           />
-        </div>
-        
-        <div>
-          <label htmlFor="location" className="block text-cosmic-text mb-2 text-sm">
-            Birth Location (City, Country)
-          </label>
-          <Input
-            id="location"
-            type="text"
-            placeholder="e.g., New York, USA"
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
-            className="bg-cosmic-bg border-cosmic-accent/30 text-cosmic-text"
+          
+          <FormField
+            control={form.control}
+            name="birthTime"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="block text-cosmic-text mb-2 text-sm">Birth Time (optional)</FormLabel>
+                <FormControl>
+                  <Input
+                    type="time"
+                    {...field}
+                    className="bg-cosmic-bg border-cosmic-accent/30 text-cosmic-text"
+                  />
+                </FormControl>
+              </FormItem>
+            )}
           />
-        </div>
-        
-        {error && <p className="text-red-400 text-sm">{error}</p>}
-        
-        <Button 
-          type="submit" 
-          className="w-full bg-cosmic-accent hover:bg-cosmic-accent/80 text-white"
-        >
-          Begin Cosmic Journey
-        </Button>
-      </form>
+          
+          <FormField
+            control={form.control}
+            name="location"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="block text-cosmic-text mb-2 text-sm">Birth Location (City, Country)</FormLabel>
+                <FormControl>
+                  <Input
+                    type="text"
+                    placeholder="e.g., New York, USA"
+                    {...field}
+                    className="bg-cosmic-bg border-cosmic-accent/30 text-cosmic-text"
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="gender"
+            render={({ field }) => (
+              <FormItem className="space-y-1">
+                <FormLabel className="block text-cosmic-text mb-2 text-sm">Gender</FormLabel>
+                <FormControl>
+                  <RadioGroup
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                    className="flex space-x-4"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="male" id="male" />
+                      <Label htmlFor="male" className="text-cosmic-text">Male</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="female" id="female" />
+                      <Label htmlFor="female" className="text-cosmic-text">Female</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="neutral" id="neutral" />
+                      <Label htmlFor="neutral" className="text-cosmic-text">Neutral</Label>
+                    </div>
+                  </RadioGroup>
+                </FormControl>
+              </FormItem>
+            )}
+          />
+          
+          {error && <p className="text-red-400 text-sm">{error}</p>}
+          
+          <Button 
+            type="submit" 
+            className="w-full bg-cosmic-accent hover:bg-cosmic-accent/80 text-white"
+          >
+            Begin Cosmic Journey
+          </Button>
+        </form>
+      </Form>
     </div>
   );
 };

@@ -11,6 +11,8 @@ import { useToast } from '@/components/ui/use-toast';
 import OnboardingForm from '../components/OnboardingForm';
 import UserProfile from '../components/UserProfile';
 import ChatHistory from '../components/ChatHistory';
+import { Moon, Sun } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface Message {
   id: string;
@@ -32,10 +34,66 @@ const Index: React.FC = () => {
   const [isOnboardingComplete, setIsOnboardingComplete] = useState(false);
   const [dateOfBirth, setDateOfBirth] = useState('');
   const [location, setLocation] = useState('');
+  const [birthTime, setBirthTime] = useState('');
+  const [gender, setGender] = useState('');
   const [isChatHistoryOpen, setIsChatHistoryOpen] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(false);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+
+  // Load user data and chat history from localStorage on initial render
+  useEffect(() => {
+    const storedDateOfBirth = localStorage.getItem('userDateOfBirth');
+    const storedLocation = localStorage.getItem('userLocation');
+    const storedBirthTime = localStorage.getItem('userBirthTime');
+    const storedGender = localStorage.getItem('userGender');
+    const storedMessages = localStorage.getItem('chatMessages');
+    const storedTheme = localStorage.getItem('theme');
+    
+    if (storedDateOfBirth && storedLocation) {
+      setDateOfBirth(storedDateOfBirth);
+      setLocation(storedLocation);
+      setBirthTime(storedBirthTime || '');
+      setGender(storedGender || '');
+      setIsOnboardingComplete(true);
+    }
+    
+    if (storedMessages) {
+      try {
+        const parsedMessages = JSON.parse(storedMessages);
+        if (Array.isArray(parsedMessages) && parsedMessages.length > 0) {
+          setMessages(parsedMessages);
+        }
+      } catch (e) {
+        console.error("Error parsing stored messages:", e);
+      }
+    }
+    
+    if (storedTheme === 'dark') {
+      setIsDarkMode(true);
+      document.documentElement.classList.add('dark');
+    }
+  }, []);
+
+  // Save messages to localStorage whenever they change
+  useEffect(() => {
+    if (messages.length > 1) {
+      localStorage.setItem('chatMessages', JSON.stringify(messages));
+    }
+  }, [messages]);
+
+  // Toggle dark mode
+  const toggleDarkMode = () => {
+    setIsDarkMode(!isDarkMode);
+    if (!isDarkMode) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  };
 
   // Scroll to bottom of messages
   useEffect(() => {
@@ -51,15 +109,17 @@ const Index: React.FC = () => {
     setApiKey(key);
   };
 
-  const handleOnboardingComplete = (dob: string, loc: string) => {
+  const handleOnboardingComplete = (dob: string, loc: string, time: string, gender: string) => {
     setDateOfBirth(dob);
     setLocation(loc);
+    setBirthTime(time);
+    setGender(gender);
     setIsOnboardingComplete(true);
     
     // Add a confirmation message
     const newMessage: Message = {
       id: `ai-${Date.now()}`,
-      text: `Thank you. I now have your birth details (${dob}, ${loc}). How may I assist you with your cosmic inquiries today?`,
+      text: `Thank you. I now have your birth details (${dob}, ${time}, ${loc}, ${gender}). How may I assist you with your cosmic inquiries today?`,
       isUser: false
     };
     
@@ -93,7 +153,16 @@ const Index: React.FC = () => {
       
       // Use Gemini API if key is provided, otherwise use local generation
       if (apiKey) {
-        response = await getGeminiAstrologyResponse(messageText, apiKey);
+        response = await getGeminiAstrologyResponse(
+          messageText, 
+          apiKey,
+          {
+            dateOfBirth, 
+            location,
+            birthTime,
+            gender
+          }
+        );
       } else {
         response = generateAstrologyResponse(messageText);
       }
@@ -121,7 +190,7 @@ const Index: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-cosmic-bg overflow-hidden relative">
+    <div className={`min-h-screen flex flex-col bg-cosmic-bg overflow-hidden relative ${isDarkMode ? 'dark' : ''}`}>
       <StarField />
       <ApiKeyForm onApiKeySave={handleApiKeySave} />
       <ChatHistory 
@@ -133,7 +202,29 @@ const Index: React.FC = () => {
       <div className="relative z-10 flex flex-col h-screen">
         <AstrologyHeader openChatHistory={() => setIsChatHistoryOpen(true)} />
         
-        {isOnboardingComplete && <UserProfile dateOfBirth={dateOfBirth} location={location} />}
+        <div className="absolute top-2 right-16 z-20">
+          <Button 
+            variant="ghost" 
+            size="icon"
+            onClick={toggleDarkMode}
+            className="rounded-full w-8 h-8 bg-cosmic-bg/80 backdrop-blur-sm border border-cosmic-accent/20"
+          >
+            {isDarkMode ? (
+              <Sun className="h-4 w-4 text-cosmic-accent" />
+            ) : (
+              <Moon className="h-4 w-4 text-cosmic-accent" />
+            )}
+          </Button>
+        </div>
+        
+        {isOnboardingComplete && (
+          <UserProfile 
+            dateOfBirth={dateOfBirth} 
+            location={location} 
+            birthTime={birthTime}
+            gender={gender}
+          />
+        )}
         
         <main className="flex-1 overflow-y-auto px-4 pb-6 pt-2">
           <div className="max-w-3xl mx-auto space-y-4">
