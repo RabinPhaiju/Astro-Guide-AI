@@ -11,7 +11,7 @@ import { useToast } from '@/components/ui/use-toast';
 import OnboardingForm from '../components/OnboardingForm';
 import UserProfile from '../components/UserProfile';
 import ChatHistory from '../components/ChatHistory';
-import { Moon, Sun, Settings } from 'lucide-react';
+import { Moon, Sun } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface Message {
@@ -251,7 +251,6 @@ const Index: React.FC = () => {
   return (
     <div className={`min-h-screen flex flex-col bg-cosmic-bg overflow-hidden relative ${isDarkMode ? 'dark' : ''}`}>
       <StarField />
-      <ApiKeyForm onApiKeySave={handleApiKeySave} />
       <ChatHistory 
         isOpen={isChatHistoryOpen} 
         onClose={() => setIsChatHistoryOpen(false)} 
@@ -274,14 +273,7 @@ const Index: React.FC = () => {
               <Moon className="h-4 w-4 text-cosmic-accent" />
             )}
           </Button>
-          
-          <Button
-            variant="ghost"
-            size="icon"
-            className="rounded-full w-8 h-8 bg-cosmic-bg/80 backdrop-blur-sm border border-cosmic-accent/20"
-          >
-            <Settings className="h-4 w-4 text-cosmic-accent" />
-          </Button>
+          <ApiKeyForm onApiKeySave={handleApiKeySave} />
         </div>
         
         {isOnboardingComplete && (

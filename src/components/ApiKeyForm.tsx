@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Settings } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface ApiKeyFormProps {
   onApiKeySave: (apiKey: string) => void;
@@ -26,14 +27,15 @@ const ApiKeyForm: React.FC<ApiKeyFormProps> = ({ onApiKeySave }) => {
   };
   
   return (
-    <div className="relative z-20">
-      <button 
-        onClick={() => setShowForm(!showForm)}
-        className="fixed top-4 right-4 p-2 rounded-full bg-cosmic-secondary/40 hover:bg-cosmic-secondary/60 transition-colors"
-        title="Configure API Key"
-      >
-        <Settings className="w-5 h-5 text-cosmic-accent" />
-      </button>
+    <div className="">
+       <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setShowForm(!showForm)}
+            className="rounded-full w-8 h-8 bg-cosmic-bg/80 backdrop-blur-sm border border-cosmic-accent/20"
+          >
+            <Settings className="h-4 w-4 text-cosmic-accent" />
+          </Button>
       
       {showForm && (
         <div className="fixed top-16 right-4 bg-cosmic-bg border border-cosmic-accent/30 rounded-lg p-4 shadow-lg w-80">
