@@ -1,6 +1,7 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Star } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 
 interface ChatMessageProps {
   message: string;
@@ -11,6 +12,7 @@ interface ChatMessageProps {
 const ChatMessage: React.FC<ChatMessageProps> = ({ message, isUser, imageUrl }) => {
   const [displayedText, setDisplayedText] = useState('');
   const [isTyping, setIsTyping] = useState(!isUser);
+  const messageRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     // Only apply typing effect to assistant messages
@@ -23,7 +25,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, isUser, imageUrl }) 
     setDisplayedText('');
     
     let index = 0;
-    const typingSpeed = 20; // 1.5x faster (was 30ms per character)
+    const typingSpeed = 20 * 0.555; // 1.8x faster (was 20ms per character)
     
     const typingInterval = setInterval(() => {
       if (index < message.length) {
@@ -39,7 +41,10 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, isUser, imageUrl }) 
   }, [message, isUser]);
 
   return (
-    <div className={`flex w-full mb-4 ${isUser ? 'justify-end' : 'justify-start'}`}>
+    <div 
+      className={`flex w-full mb-4 ${isUser ? 'justify-end' : 'justify-start'}`}
+      ref={messageRef}
+    >
       <div
         className={`max-w-[80%] py-3 px-4 ${
           isUser
@@ -65,7 +70,13 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, isUser, imageUrl }) 
           </div>
         )}
         
-        <p className="text-sm md:text-base whitespace-pre-wrap">{displayedText || message}</p>
+        <div className="text-sm md:text-base whitespace-pre-wrap">
+          {isUser ? (
+            <span>{message}</span>
+          ) : (
+            <ReactMarkdown>{displayedText}</ReactMarkdown>
+          )}
+        </div>
       </div>
     </div>
   );

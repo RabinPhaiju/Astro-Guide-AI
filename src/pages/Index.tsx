@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import ChatMessage from '../components/ChatMessage';
 import ChatInput from '../components/ChatInput';
@@ -46,6 +45,7 @@ const Index: React.FC = () => {
     const storedBirthTime = localStorage.getItem('userBirthTime');
     const storedGender = localStorage.getItem('userGender');
     const storedTheme = localStorage.getItem('theme');
+    const storedMessages = localStorage.getItem('chatMessages');
     
     if (storedDateOfBirth && storedLocation) {
       setDateOfBirth(storedDateOfBirth);
@@ -60,6 +60,9 @@ const Index: React.FC = () => {
         text: welcomeMessage,
         isUser: false
       }]);
+
+      // Don't load saved conversations on page refresh,
+      // just keep them in history for viewing
     }
     
     // Initialize dark mode based on stored preference
@@ -78,7 +81,9 @@ const Index: React.FC = () => {
   }, [messages, isThinking]);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
   };
 
   // Toggle dark mode
