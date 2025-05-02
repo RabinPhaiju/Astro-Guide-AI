@@ -21,7 +21,7 @@ const AstrologyHeader: React.FC<AstrologyHeaderProps> = ({ openChatHistory }) =>
       </div>
       <div className="flex items-center gap-2 mb-2">
         <Star className="w-5 h-5 text-cosmic-accent animate-twinkle" />
-        <h1 className="text-2xl md:text-3xl font-bold gradient-text">your astrologer</h1>
+        <h1 className="text-2xl md:text-3xl font-bold gradient-text">AstroGuide AI</h1>
         <Star className="w-5 h-5 text-cosmic-accent animate-twinkle" />
       </div>
       <p className="text-cosmic-text/80 text-sm md:text-base max-w-md text-center">

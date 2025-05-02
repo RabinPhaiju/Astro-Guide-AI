@@ -11,24 +11,21 @@ import { useToast } from '@/components/ui/use-toast';
 import OnboardingForm from '../components/OnboardingForm';
 import UserProfile from '../components/UserProfile';
 import ChatHistory from '../components/ChatHistory';
-import { Moon, Sun } from 'lucide-react';
+import { Moon, Sun, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface Message {
   id: string;
   text: string;
   isUser: boolean;
+  imageUrl?: string;
 }
 
 const Index: React.FC = () => {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: '1',
-      text: "Welcome to your astrologer. I am your cosmic guide. Before we begin, please share your date of birth and location.",
-      isUser: false
-    }
-  ]);
-  
+  // Initial welcome message
+  const welcomeMessage = "Welcome to AstroGuide AI. I'm here to provide cosmic insights about your relationships, career path, personal growth, and life's journey. What would you like to explore today? Feel free to ask about love, career opportunities, spiritual guidance, or any other aspect of your life that needs clarity.";
+
+  const [messages, setMessages] = useState<Message[]>([]);
   const [isThinking, setIsThinking] = useState(false);
   const [apiKey, setApiKey] = useState<string>('');
   const [isOnboardingComplete, setIsOnboardingComplete] = useState(false);
@@ -57,6 +54,15 @@ const Index: React.FC = () => {
       setBirthTime(storedBirthTime || '');
       setGender(storedGender || '');
       setIsOnboardingComplete(true);
+      
+      // Initialize welcome message if this is the first time or no stored messages
+      if (!storedMessages) {
+        setMessages([{
+          id: 'initial',
+          text: welcomeMessage,
+          isUser: false
+        }]);
+      }
     }
     
     if (storedMessages) {
@@ -70,23 +76,28 @@ const Index: React.FC = () => {
       }
     }
     
+    // Initialize dark mode based on stored preference
     if (storedTheme === 'dark') {
       setIsDarkMode(true);
       document.documentElement.classList.add('dark');
+    } else {
+      setIsDarkMode(false);
+      document.documentElement.classList.remove('dark');
     }
   }, []);
 
   // Save messages to localStorage whenever they change
   useEffect(() => {
-    if (messages.length > 1) {
+    if (messages.length > 0) {
       localStorage.setItem('chatMessages', JSON.stringify(messages));
     }
   }, [messages]);
 
   // Toggle dark mode
   const toggleDarkMode = () => {
-    setIsDarkMode(!isDarkMode);
-    if (!isDarkMode) {
+    const newMode = !isDarkMode;
+    setIsDarkMode(newMode);
+    if (newMode) {
       document.documentElement.classList.add('dark');
       localStorage.setItem('theme', 'dark');
     } else {
@@ -116,14 +127,69 @@ const Index: React.FC = () => {
     setGender(gender);
     setIsOnboardingComplete(true);
     
-    // Add a confirmation message
-    const newMessage: Message = {
-      id: `ai-${Date.now()}`,
-      text: `Thank you. I now have your birth details (${dob}, ${time}, ${loc}, ${gender}). How may I assist you with your cosmic inquiries today?`,
+    // Set initial welcome message
+    setMessages([{
+      id: 'initial',
+      text: welcomeMessage,
       isUser: false
-    };
+    }]);
+  };
+
+  // Handle image upload
+  const handleImageUpload = async (file: File) => {
+    if (!isOnboardingComplete) {
+      toast({
+        title: "Please complete onboarding",
+        description: "We need your birth details before consulting the stars.",
+        variant: "destructive"
+      });
+      return;
+    }
     
-    setMessages(prev => [...prev, newMessage]);
+    // Show loading state
+    setIsThinking(true);
+    
+    try {
+      // Create a message with the image
+      const imageUrl = URL.createObjectURL(file);
+      const newImageMessage: Message = {
+        id: `user-image-${Date.now()}`,
+        text: "Image analysis request",
+        isUser: true,
+        imageUrl
+      };
+      
+      setMessages(prev => [...prev, newImageMessage]);
+      
+      // Process the image with Gemini API
+      let response = "I'm analyzing this image for astrological significance...";
+      
+      if (apiKey) {
+        // In a real implementation, we would send the image to Gemini Vision API
+        // For now, we'll just provide a placeholder response
+        response = "The cosmic patterns in this image suggest a period of transformation and growth. The visual elements align with Jupiter's current transit, indicating expansion in areas related to your creative pursuits. Consider how these symbols might reflect your current life path.";
+      } else {
+        response = "I notice interesting patterns in this image that may have astrological significance. Without my full cosmic powers activated (API key), I can only provide a limited interpretation. The shapes and colors suggest connections to your current celestial alignments.";
+      }
+      
+      // Add AI response
+      const newAiMessage: Message = {
+        id: `ai-${Date.now()}`,
+        text: response,
+        isUser: false
+      };
+      
+      setMessages(prev => [...prev, newAiMessage]);
+    } catch (error) {
+      console.error("Error processing image:", error);
+      toast({
+        title: "Error Processing Image",
+        description: "The cosmic energies couldn't process this image. Please try again later.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsThinking(false);
+    }
   };
 
   // Handle new user message
@@ -202,7 +268,7 @@ const Index: React.FC = () => {
       <div className="relative z-10 flex flex-col h-screen">
         <AstrologyHeader openChatHistory={() => setIsChatHistoryOpen(true)} />
         
-        <div className="absolute top-2 right-16 z-20">
+        <div className="absolute top-2 right-4 z-20 flex items-center space-x-2">
           <Button 
             variant="ghost" 
             size="icon"
@@ -214,6 +280,14 @@ const Index: React.FC = () => {
             ) : (
               <Moon className="h-4 w-4 text-cosmic-accent" />
             )}
+          </Button>
+          
+          <Button
+            variant="ghost"
+            size="icon"
+            className="rounded-full w-8 h-8 bg-cosmic-bg/80 backdrop-blur-sm border border-cosmic-accent/20"
+          >
+            <Settings className="h-4 w-4 text-cosmic-accent" />
           </Button>
         </div>
         
@@ -236,7 +310,8 @@ const Index: React.FC = () => {
                   <ChatMessage 
                     key={message.id} 
                     message={message.text} 
-                    isUser={message.isUser} 
+                    isUser={message.isUser}
+                    imageUrl={message.imageUrl}
                   />
                 ))}
                 
@@ -255,7 +330,11 @@ const Index: React.FC = () => {
         </main>
         
         <footer className="sticky bottom-0 w-full px-4 py-4 bg-gradient-to-t from-cosmic-bg to-transparent">
-          <ChatInput onSubmit={handleSendMessage} disabled={!isOnboardingComplete} />
+          <ChatInput 
+            onSubmit={handleSendMessage} 
+            onImageUpload={handleImageUpload} 
+            disabled={!isOnboardingComplete} 
+          />
         </footer>
       </div>
     </div>

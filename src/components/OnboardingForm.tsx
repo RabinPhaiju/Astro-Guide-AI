@@ -7,10 +7,6 @@ import { Label } from '@/components/ui/label';
 import { Form, FormField, FormItem, FormLabel, FormControl } from '@/components/ui/form';
 import { useForm } from 'react-hook-form';
 
-interface OnboardingFormProps {
-  onComplete: (dateOfBirth: string, location: string, birthTime: string, gender: string) => void;
-}
-
 interface FormValues {
   dateOfBirth: string;
   location: string;
@@ -18,11 +14,21 @@ interface FormValues {
   gender: string;
 }
 
-const OnboardingForm: React.FC<OnboardingFormProps> = ({ onComplete }) => {
+interface OnboardingFormProps {
+  onComplete: (dateOfBirth: string, location: string, birthTime: string, gender: string) => void;
+  initialValues?: {
+    dateOfBirth: string;
+    location: string;
+    birthTime: string;
+    gender: string;
+  };
+}
+
+const OnboardingForm: React.FC<OnboardingFormProps> = ({ onComplete, initialValues }) => {
   const [error, setError] = useState('');
   
   const form = useForm<FormValues>({
-    defaultValues: {
+    defaultValues: initialValues || {
       dateOfBirth: '',
       location: '',
       birthTime: '',
@@ -52,7 +58,7 @@ const OnboardingForm: React.FC<OnboardingFormProps> = ({ onComplete }) => {
 
   return (
     <div className="max-w-md mx-auto p-6 bg-cosmic-bg/80 border border-cosmic-accent/20 rounded-lg backdrop-blur-sm">
-      <h2 className="text-cosmic-accent text-xl mb-4 text-center">Before we consult the stars...</h2>
+      <h2 className="text-cosmic-accent text-xl mb-4 text-center">Your Cosmic Profile</h2>
       <p className="mb-6 text-cosmic-text/80 text-sm text-center">
         To provide you with accurate cosmic insights, please share your birth details.
       </p>
@@ -147,7 +153,7 @@ const OnboardingForm: React.FC<OnboardingFormProps> = ({ onComplete }) => {
             type="submit" 
             className="w-full bg-cosmic-accent hover:bg-cosmic-accent/80 text-white"
           >
-            Begin Cosmic Journey
+            Save Profile
           </Button>
         </form>
       </Form>
