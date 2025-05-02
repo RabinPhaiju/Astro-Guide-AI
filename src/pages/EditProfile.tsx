@@ -5,9 +5,11 @@ import OnboardingForm from '../components/OnboardingForm';
 import StarField from '../components/StarField';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
+import { useToast } from '@/components/ui/use-toast';
 
 const EditProfile: React.FC = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   
   const handleComplete = (dateOfBirth: string, location: string, birthTime: string, gender: string) => {
     // Save to localStorage just like in the onboarding
@@ -15,6 +17,12 @@ const EditProfile: React.FC = () => {
     localStorage.setItem('userLocation', location);
     localStorage.setItem('userBirthTime', birthTime || 'Not provided');
     localStorage.setItem('userGender', gender);
+    
+    // Show success toast
+    toast({
+      title: "Profile Updated",
+      description: "Your cosmic profile has been successfully updated.",
+    });
     
     // Navigate back to chat with updated profile
     navigate('/');

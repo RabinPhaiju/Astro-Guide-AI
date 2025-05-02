@@ -1,11 +1,13 @@
 
 import React from 'react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface Message {
   id: string;
   text: string;
   isUser: boolean;
+  imageUrl?: string;
 }
 
 interface ChatHistoryProps {
@@ -21,22 +23,24 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({ isOpen, onClose, messages }) 
         <SheetHeader>
           <SheetTitle className="text-cosmic-accent">Conversation History</SheetTitle>
         </SheetHeader>
-        <div className="mt-6 overflow-y-auto max-h-[80vh]">
-          {messages.length > 1 ? (
-            messages.slice(1).map((msg) => (
-              <div key={msg.id} className="mb-4 border-b border-cosmic-accent/10 pb-2">
-                <div className="text-xs text-cosmic-accent/60 mb-1">
-                  {msg.isUser ? 'You' : 'Cosmic Guide'}
+        <ScrollArea className="h-[calc(100vh-100px)] pr-4">
+          <div className="mt-6">
+            {messages.length > 1 ? (
+              messages.map((msg) => (
+                <div key={msg.id} className="mb-4 border-b border-cosmic-accent/10 pb-2">
+                  <div className="text-xs text-cosmic-accent/60 mb-1">
+                    {msg.isUser ? 'You' : 'Cosmic Guide'}
+                  </div>
+                  <div className="text-sm text-cosmic-text line-clamp-2">
+                    {msg.text}
+                  </div>
                 </div>
-                <div className="text-sm text-cosmic-text line-clamp-2">
-                  {msg.text}
-                </div>
-              </div>
-            ))
-          ) : (
-            <p className="text-sm text-cosmic-text/60">No messages yet</p>
-          )}
-        </div>
+              ))
+            ) : (
+              <p className="text-sm text-cosmic-text/60">No messages yet</p>
+            )}
+          </div>
+        </ScrollArea>
       </SheetContent>
     </Sheet>
   );

@@ -39,13 +39,12 @@ const Index: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
-  // Load user data and chat history from localStorage on initial render
+  // Load user data from localStorage on initial render
   useEffect(() => {
     const storedDateOfBirth = localStorage.getItem('userDateOfBirth');
     const storedLocation = localStorage.getItem('userLocation');
     const storedBirthTime = localStorage.getItem('userBirthTime');
     const storedGender = localStorage.getItem('userGender');
-    const storedMessages = localStorage.getItem('chatMessages');
     const storedTheme = localStorage.getItem('theme');
     
     if (storedDateOfBirth && storedLocation) {
@@ -55,25 +54,12 @@ const Index: React.FC = () => {
       setGender(storedGender || '');
       setIsOnboardingComplete(true);
       
-      // Initialize welcome message if this is the first time or no stored messages
-      if (!storedMessages) {
-        setMessages([{
-          id: 'initial',
-          text: welcomeMessage,
-          isUser: false
-        }]);
-      }
-    }
-    
-    if (storedMessages) {
-      try {
-        const parsedMessages = JSON.parse(storedMessages);
-        if (Array.isArray(parsedMessages) && parsedMessages.length > 0) {
-          setMessages(parsedMessages);
-        }
-      } catch (e) {
-        console.error("Error parsing stored messages:", e);
-      }
+      // Initialize welcome message if this is the first time
+      setMessages([{
+        id: 'initial',
+        text: welcomeMessage,
+        isUser: false
+      }]);
     }
     
     // Initialize dark mode based on stored preference
@@ -86,12 +72,14 @@ const Index: React.FC = () => {
     }
   }, []);
 
-  // Save messages to localStorage whenever they change
+  // Auto-scroll whenever messages change or when typing
   useEffect(() => {
-    if (messages.length > 0) {
-      localStorage.setItem('chatMessages', JSON.stringify(messages));
-    }
-  }, [messages]);
+    scrollToBottom();
+  }, [messages, isThinking]);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   // Toggle dark mode
   const toggleDarkMode = () => {
@@ -106,15 +94,6 @@ const Index: React.FC = () => {
     }
   };
 
-  // Scroll to bottom of messages
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
   // Handle API key update
   const handleApiKeySave = (key: string) => {
     setApiKey(key);
@@ -126,6 +105,12 @@ const Index: React.FC = () => {
     setBirthTime(time);
     setGender(gender);
     setIsOnboardingComplete(true);
+    
+    // Save to localStorage
+    localStorage.setItem('userDateOfBirth', dob);
+    localStorage.setItem('userLocation', loc);
+    localStorage.setItem('userBirthTime', time || 'Not provided');
+    localStorage.setItem('userGender', gender);
     
     // Set initial welcome message
     setMessages([{
@@ -180,6 +165,10 @@ const Index: React.FC = () => {
       };
       
       setMessages(prev => [...prev, newAiMessage]);
+      
+      // Save messages to localStorage
+      const updatedMessages = [...messages, newImageMessage, newAiMessage];
+      localStorage.setItem('chatMessages', JSON.stringify(updatedMessages));
     } catch (error) {
       console.error("Error processing image:", error);
       toast({
@@ -241,6 +230,10 @@ const Index: React.FC = () => {
       };
       
       setMessages(prev => [...prev, newAiMessage]);
+      
+      // Save messages to localStorage
+      const updatedMessages = [...messages, newUserMessage, newAiMessage];
+      localStorage.setItem('chatMessages', JSON.stringify(updatedMessages));
     } catch (error) {
       console.error("Error generating response:", error);
       // Fallback response
