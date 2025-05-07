@@ -43,7 +43,9 @@ export async function getGeminiAstrologyResponse(
       Birth Location: ${userInfo.location}
       Gender: ${userInfo.gender}
       
-      Based on this birth information, consider the North Indian chart (Vedic astrology) positions of planets like Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn, Rahu, and Ketu when providing your analysis.
+      Based on this birth information, consider the North Indian chart (Vedic astrology) positions of planets in the traditional 12-house square format. Consider positions of Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn, Rahu, and Ketu and how they affect the 12 houses when providing your analysis. 
+      
+      Use Vedic astrology principles to analyze the chart and provide insights on how planetary positions in specific houses impact different aspects of the person's life.
       `;
     }
     
