@@ -42,6 +42,8 @@ export async function getGeminiAstrologyResponse(
       Birth Time: ${userInfo.birthTime}
       Birth Location: ${userInfo.location}
       Gender: ${userInfo.gender}
+      
+      Based on this birth information, consider the North Indian chart (Vedic astrology) positions of planets like Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn, Rahu, and Ketu when providing your analysis.
       `;
     }
     
@@ -55,7 +57,9 @@ export async function getGeminiAstrologyResponse(
           {
             parts: [
               {
-                text: `You are a trained expert in vedic astrology. Provide prediction about the question below with minor details as summary.
+                text: `You are a trained expert in vedic astrology. Provide details and prediction about the question below with details.
+                Use proper markdown formatting in your response, with **bold** for important points and *italics* for emphasis.
+                Include analysis based on the North Indian chart system.
                 ${userInfoString}
                 Question: "${question}"`,
               },

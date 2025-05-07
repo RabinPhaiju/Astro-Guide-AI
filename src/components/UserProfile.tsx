@@ -2,6 +2,7 @@
 import React from 'react';
 import { Edit } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import NorthChart from './NorthChart';
 
 interface UserProfileProps {
   dateOfBirth: string;
@@ -46,6 +47,14 @@ const UserProfile: React.FC<UserProfileProps> = ({ dateOfBirth, location, birthT
             <span className="text-cosmic-text">{gender}</span>
           </div>
         )}
+      </div>
+      <div className="mt-3">
+        <NorthChart 
+          dateOfBirth={dateOfBirth} 
+          location={location} 
+          birthTime={birthTime} 
+          gender={gender} 
+        />
       </div>
     </div>
   );
