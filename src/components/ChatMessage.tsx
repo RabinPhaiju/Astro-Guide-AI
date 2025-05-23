@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Star } from 'lucide-react';
+import { Star, PlayCircle, StopCircle } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
 interface ChatMessageProps {
@@ -12,6 +12,7 @@ interface ChatMessageProps {
 const ChatMessage: React.FC<ChatMessageProps> = ({ message, isUser, imageUrl }) => {
   const [displayedText, setDisplayedText] = useState('');
   const [isTyping, setIsTyping] = useState(!isUser);
+  const [isSpeaking, setIsSpeaking] = useState(false); // TTS state
   const messageRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -77,9 +78,52 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, isUser, imageUrl }) 
             <ReactMarkdown>{displayedText}</ReactMarkdown>
           )}
         </div>
+        {!isUser && (
+          <button
+            onClick={handleListen}
+            className="mt-2 flex items-center text-sm text-cosmic-accent hover:text-cosmic-highlight focus:outline-none"
+            aria-label={isSpeaking ? "Stop listening to message" : "Listen to message"}
+          >
+            {isSpeaking ? (
+              <>
+                <StopCircle className="w-5 h-5 mr-1" />
+                Stop
+              </>
+            ) : (
+              <>
+                <PlayCircle className="w-5 h-5 mr-1" />
+                Listen
+              </>
+            )}
+          </button>
+        )}
       </div>
     </div>
   );
+
+  function handleListen() {
+    if (!('speechSynthesis' in window)) {
+      console.error('Text-to-speech not supported in this browser.');
+      return;
+    }
+
+    if (isSpeaking) {
+      speechSynthesis.cancel();
+      setIsSpeaking(false);
+    } else {
+      speechSynthesis.cancel(); // Stop any other message that might be playing
+      const utterance = new SpeechSynthesisUtterance(message);
+      utterance.onend = () => {
+        setIsSpeaking(false);
+      };
+      utterance.onerror = (event) => {
+        console.error('Speech synthesis error:', event);
+        setIsSpeaking(false);
+      };
+      speechSynthesis.speak(utterance);
+      setIsSpeaking(true);
+    }
+  }
 };
 
 export default ChatMessage;
